@@ -80,12 +80,25 @@ async function run() {
       const user = await userCollection.findOne(query)
       let employee = false;
       if (user) {
-        employee = user.selectedRole === 'admin'
+        employee = user.selectedRole === 'employee'
       }
       res.send({ employee })
     })
+    app.get('/user/hr/:email', verifyToken, async (req, res) => {
+      const email = req.params.email
+      if (!email === req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized user' })
+      }
+      const query = { email: email }
+      const user = await userCollection.findOne(query)
+      let hr = false;
+      if (user) {
+        hr = user.selectedRole === 'hr'
+      }
+      res.send({ hr })
+    })
 
-    
+
     app.post('/logout', async (req, res) => {
       const user = req.body;
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
