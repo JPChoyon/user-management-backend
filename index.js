@@ -17,7 +17,19 @@ require("dotenv").config()
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.fycfdwn.mongodb.net/?retryWrites=true&w=majority`;
 
 
-
+const verifyToken = (req, res, next) => {
+  if (!req.headers.Authorization) {
+    return res.status(401).send({ message: 'unauthorized access' })
+  }
+  const token = req.headers.Authorization.split(' ')[1]
+  jwt.verify(token, process.env.SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: 'unauthorized access' })
+    }
+    req.decoded = decoded
+    next()
+  })
+}
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -33,6 +45,7 @@ async function run() {
 
     await client.db("admin").command({ ping: 1 });
     const userCollection = client.db("userManagement").collection("users");
+    const riviewColllection = client.db("userManagement").collection("reviews");
 
     // jwt authinacation
     app.post("/jwt", async (req, res) => {
@@ -43,21 +56,19 @@ async function run() {
       res.send(token);
     });
 
-    // middlewares
-    const verifyToken = (req, res, next) => {
-      console.log("inside verify token", req.headers.authorization);
-      if (!req.headers.authorization) {
-        return res.status(401).send({ message: "unauthorized access" });
+    app.get('/user/admin/:email', verifyToken, async (req, res) => {
+      const email = req.params.email
+      if (!email === req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized user' })
       }
-      const token = req.headers.authorization;
-      jwt.verify(token, process.env.SECRET, (err, decoded) => {
-        if (err) {
-          return res.status(401).send({ message: "unauthorized access" });
-        }
-        req.decoded = decoded;
-        next();
-      });
-    };
+      const query = { email: email }
+      const user = await userCollection.findOne(query)
+      let admin = false;
+      if (user) {
+        admin = user.selectedRole === 'admin'
+      }
+      res.send({ admin })
+    })
 
 
     app.post('/logout', async (req, res) => {
@@ -80,6 +91,21 @@ async function run() {
       const result = await userCollection.insertOne(users);
       res.send(result);
     });
+
+    // revew 
+    app.post('/reviews', async (req, res) => {
+      const review = req.body;
+      const result = await riviewColllection.insertOne(review);
+      res.send(result)
+    })
+    app.get('/reviews', async (req, res) => {
+      const cursor = riviewColllection
+        .find();
+      const result = await cursor.toArray()
+
+      res.send(result)
+    })
+
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
