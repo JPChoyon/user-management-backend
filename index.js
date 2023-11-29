@@ -71,6 +71,21 @@ async function run() {
     })
 
 
+    app.get('/user/employee/:email', verifyToken, async (req, res) => {
+      const email = req.params.email
+      if (!email === req.decoded.email) {
+        return res.status(403).send({ message: 'unauthorized user' })
+      }
+      const query = { email: email }
+      const user = await userCollection.findOne(query)
+      let employee = false;
+      if (user) {
+        employee = user.selectedRole === 'admin'
+      }
+      res.send({ employee })
+    })
+
+    
     app.post('/logout', async (req, res) => {
       const user = req.body;
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
