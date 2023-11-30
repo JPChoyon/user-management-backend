@@ -46,6 +46,7 @@ async function run() {
     await client.db("admin").command({ ping: 1 });
     const userCollection = client.db("userManagement").collection("users");
     const riviewColllection = client.db("userManagement").collection("reviews");
+    const paymentColllection = client.db("userManagement").collection("payment");
 
     // jwt authinacation
     app.post("/jwt", async (req, res) => {
@@ -124,14 +125,14 @@ async function run() {
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
     })
 
-    app.get('/users',verifyToken, async (req, res) => {     
+    app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray()
       res.send(result)
     })
 
     app.post('/users', async (req, res) => {
       const users = req.body;
-      
+
       const result = await userCollection.insertOne(users);
       res.send(result);
     });
@@ -149,7 +150,13 @@ async function run() {
 
       res.send(result)
     })
+    app.get('/payment', async (req, res) => {
+      const cursor = paymentColllection
+        .find();
+      const result = await cursor.toArray()
 
+      res.send(result)
+    })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
