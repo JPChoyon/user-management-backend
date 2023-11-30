@@ -99,12 +99,32 @@ async function run() {
     })
 
 
+    app.delete('/users/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await userCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    // manage user role 
+    app.patch('/users/hr/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          selectedRole: 'hr'
+        }
+      }
+      const result = await userCollection.updateOne(query, updateDoc)
+      res.send(result)
+    })
+
     app.post('/logout', async (req, res) => {
       const user = req.body;
       res.clearCookie('token', { maxAge: 0 }).send({ success: true })
     })
 
-    app.get('/users', async (req, res) => {     
+    app.get('/users',verifyToken, async (req, res) => {     
       const result = await userCollection.find().toArray()
       res.send(result)
     })
