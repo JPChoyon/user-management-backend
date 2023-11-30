@@ -47,6 +47,7 @@ async function run() {
     const userCollection = client.db("userManagement").collection("users");
     const riviewColllection = client.db("userManagement").collection("reviews");
     const paymentColllection = client.db("userManagement").collection("payment");
+    const serviceColllection = client.db("userManagement").collection("services");
 
     // jwt authinacation
     app.post("/jwt", async (req, res) => {
@@ -152,6 +153,13 @@ async function run() {
     })
     app.get('/payment', async (req, res) => {
       const cursor = paymentColllection
+        .find();
+      const result = await cursor.toArray()
+
+      res.send(result)
+    })
+    app.get('/services', async (req, res) => {
+      const cursor = serviceColllection
         .find();
       const result = await cursor.toArray()
 
