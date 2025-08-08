@@ -1,3 +1,5 @@
 node_modules
+temp_auto_push.bat
 .env
 .vercel
+temp_interactive_push.bat

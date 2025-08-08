@@ -14,6 +14,7 @@ require("dotenv").config()
 
 // mongodb connect 
 
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster1.fycfdwn.mongodb.net/?retryWrites=true&w=majority`;
 
 
@@ -43,7 +44,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     const userCollection = client.db("userManagement").collection("users");
     const riviewColllection = client.db("userManagement").collection("reviews");
     const paymentColllection = client.db("userManagement").collection("payment");
